@@ -55,7 +55,6 @@ int main() {
 				exit(-1);
 			}
 			printf("\n\n\n\t\t      High score is %d", highScore);
-			printScoreList();
 			printf("\n\t\t  Press any key to continue\n\n");
 			_getch();			
 			fclose(fp);
