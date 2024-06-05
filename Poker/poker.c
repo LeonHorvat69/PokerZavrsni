@@ -1,8 +1,6 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <windows.h>
+
 
 #include "structs.h"
 #include "functions.h"
@@ -35,33 +33,13 @@ int main() {
 	statistics.round = 1;
 	shuffleDeck(playerInfoP->deck, allCardsInOrder);
 
-	int choice = 0;
-	while (1) {
-		choice = printMenu();
-		if (choice == 2) {
-			printGameInstructions();
-			continue;
-		}
-		if (choice == 3) {
-			int highScore = 0;
-			FILE* fp = fopen("highScore.txt", "r");
-			if (fp == NULL) {
-				printf("No high score");
-				_getch();
-				continue;
-			}
-			if (fscanf(fp, "%d", &highScore) == NULL) {
-				perror("ERROR: ");
-				exit(-1);
-			}
-			printf("\n\n\n\t\t      High score is %d", highScore);
-			printf("\n\t\t  Press any key to continue\n\n");
-			_getch();			
-			fclose(fp);
-			continue;
-		}
 
-		while (choice == 1) {
+	int choice = 0;
+	while (1) {   // Menu
+		choice = printMenu();
+		openSubMenu(choice);
+
+		while (choice == 1) {  //Start game
 			playerInfo.discards = 3;
 
 			for (int i = 0; i < MAX_HAND_SIZE; i++) {
@@ -75,9 +53,9 @@ int main() {
 
 			printGame(playerInfoP, 0);
 			playHand(playerInfoP);
-			scoreHand(playerInfoP);
+			playerInfo.score = scoreHand(playerInfoP);
 
-			if (statistics.round == 3) {
+			if (statistics.round == 3) {  //Last round
 				statistics.round = 1;
 				saveScore(playerInfo.score);
 				addScoreToList(playerInfo.score);
@@ -88,15 +66,15 @@ int main() {
 			statistics.round++;
 		}
 
-		if (choice == 4) {
+		if (choice == 4) {  //Exit
+			card = NULL;
+			playerInfoP = NULL;
+			statisticsP = NULL;
 			for (int i = 0; i < 52; i++) {
 				allCardsInOrder[i] = NULL;
 				deck[i] = NULL;
 			}
 			free(card);
-			card = NULL;
-			playerInfoP = NULL;
-			statisticsP = NULL;
 			return 0;
 		}
 	}

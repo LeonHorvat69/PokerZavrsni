@@ -16,11 +16,11 @@ void printCardColor(const CARD* hand, const int ChoseColor);
 void playHand(PLAYER_INFO* playerInfo);
 void sortPlayedHand(PLAYER_INFO* playerInfo);
 inline void arraySwitchPlace(CARD* array[], const int indexA, const int indexB);
-inline void arraySwitchPlaceInt(int* array, const int indexA, const int indexB);
+inline void arraySwitchPlaceInt(int* biggerNum, int* smallerNum);
 int getInput(char*);
 
 // SCORING
-void scoreHand(PLAYER_INFO* playerInfo);
+int scoreHand(PLAYER_INFO* playerInfo);
 int calculateChips(const PLAYER_INFO* playerInfo, int* cardChips);
 int calculateMult(const PLAYER_INFO* playerInfo);
 char* handType(const PLAYER_INFO* playerInfo);
@@ -32,6 +32,8 @@ void saveScore(const int score);
 //MENU
 int printMenu();
 void printGameInstructions();
+void showHighScore();
+void openSubMenu(int choice);
 
 //LEADERBOARD
 void addScoreToList(const int score);
@@ -41,6 +43,7 @@ void insertScore(const int score);
 void sortScores();
 void updateList();
 void selectionSort(int polje[], const int n);
-inline void zamjena(int* const veci, int* const manji);
+inline void arraySwitchPlaceInt(int* biggerNum, int* smallerNum);
 void printScoreList();
+int linearSearch(const int array[], const int n, const int num);
 

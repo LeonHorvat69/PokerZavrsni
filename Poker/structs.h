@@ -8,7 +8,7 @@ typedef struct {
 typedef struct {
 	int allCardsPlayedInRound;
 	int round;
-
+	int previousScore;
 }STATISTICS;
 
 typedef struct {

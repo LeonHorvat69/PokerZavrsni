@@ -19,21 +19,24 @@
 #define SPADE_COLOR_BRIGHT_WHITE     "\x1b[90m"
 #define HEART_COLOR_BRIGHT_RED     "\x1b[91m"
 
-const int cardAmount = 52;
-const int handSize = 8;
-const char(*handName[20]) = { "Royal Flush", "Four of a Kind", "Full House",
-							  "Flush",       "Straight",       "Three of a Kind",
-							  "Two Pair",    "One Pair",	   "High Card",	      "Empty hand" };
+#define checkFinalScore(previousScore) linearSearch(scoreListP, 10, previousScore)
 
-const int handTypeChipsValues[10] = { 100, 60, 40,
-									 35, 30, 30,
-									 20, 10, 5, 0 };
+static const int cardAmount = 52;
+static const char(*handName[20]) = { "Royal Flush", "Four of a Kind", "Full House",
+									 "Flush",       "Straight",       "Three of a Kind",
+									 "Two Pair",    "One Pair",	      "High Card",	      "Empty hand" };
 
-const int handTypeMultValues[10] = { 8, 7, 4,
-									 4, 4, 3,
-									 2, 2, 1, 0 };
+static const int handTypeChipsValues[10] = { 100, 60, 40,
+											 35, 30, 30,
+											 20, 10, 5, 0 };
+
+static const int handTypeMultValues[10] = { 8, 7, 4,
+								   		    4, 4, 3,
+										    2, 2, 1, 0 };
 
 extern int deckIndex;
+static int scoreListP[10] = { 0 };
+static int* scoreList = scoreListP;
 
 // ASSIGN CARDS AND SPACE
 CARD* dynamicSpace() {
@@ -78,11 +81,10 @@ void shuffleDeck(CARD* deck[], CARD* allCardsInOrder[]) {
 		int randNum = rand() % cardsLeft;
 		randCard = sortedNumbers[randNum];
 		deck[i] = allCardsInOrder[randCard];
-		arraySwitchPlaceInt(sortedNumbers, randNum, cardsLeft - 1);
+		arraySwitchPlaceInt(&sortedNumbers[randNum], &sortedNumbers[cardsLeft - 1]);
 		cardsLeft--;
 	}
 }
-
 
 // PRINT HAND
 void printGame(const PLAYER_INFO* playerInfo, const int discardUsed) {
@@ -96,7 +98,7 @@ void printGame(const PLAYER_INFO* playerInfo, const int discardUsed) {
 	printf("Score  %d\n", playerInfo->score);
 	printf("Discards  %d", playerInfo->discards);
 	printf("\t\t\t\t  %d.  Round\n", playerInfo->statistics->round);
-	for (int i = 0; i < handSize; i++) {
+	for (int i = 0; i < 8; i++) {
 		if (strcmp(playerInfo->hand[i]->suit, HEART) == 0) {
 			printCardColor(playerInfo->hand[i], 0);
 		}
@@ -112,7 +114,7 @@ void printGame(const PLAYER_INFO* playerInfo, const int discardUsed) {
 	}
 
 	putchar('\n');
-	for (int i = 0; i < handSize; i++) {
+	for (int i = 0; i < 8; i++) {
 		printf("%d.     ", i + 1);
 	}
 	printf("  %d. end round\n", 0);
@@ -174,7 +176,6 @@ void printCardColor(const CARD* hand, const int ChoseColor) {
 
 }
 
-
 // PLAYING HAND
 void playHand(PLAYER_INFO* playerInfo) {
 	int numOfCardsPlayed = 0;
@@ -186,7 +187,7 @@ void playHand(PLAYER_INFO* playerInfo) {
 
 		if (input < 0) { //used for discarding cards
 			if (playerInfo->discards == 0) {
-				printf(" Used all discards!!!\n");
+				printf("\tUsed all discards!!!\n\n");
 				continue;
 			}
 			playerInfo->hand[(input * -1) - 1] = playerInfo->deck[deckIndex];
@@ -200,7 +201,7 @@ void playHand(PLAYER_INFO* playerInfo) {
 		for (int i = 0; i < numOfCardsPlayed; i++) {
 			if (playerInfo->playedHand[i]->rank == playerInfo->hand[input - 1]->rank &&
 				playerInfo->playedHand[i]->suit == playerInfo->hand[input - 1]->suit) {
-				input = getInput("gameInput"); //Ako je karta vec u ruci iskoristena ponovo upisi input
+				input = getInput("gameInput"); //If card used repeat input
 				if (input == 0)
 					break;
 			}
@@ -209,10 +210,8 @@ void playHand(PLAYER_INFO* playerInfo) {
 		playerInfo->playedHand[numOfCardsPlayed] = playerInfo->hand[input - 1];
 		numOfCardsPlayed++;
 		playerInfo->statistics->allCardsPlayedInRound++;
-		//playedHand su karte koje se igraju i uzimaju se iz arraya hand sa indexom input (input - odabrana karta)
 	} while (numOfCardsPlayed < 5);
 	
-
 	playerInfo->cardsPlayed = numOfCardsPlayed;
 	findCardSuit(playerInfo);
 }
@@ -275,17 +274,19 @@ inline void arraySwitchPlace(CARD* array[], const int indexA, const int indexB) 
 	array[indexA] = array[indexB];
 	array[indexB] = temp;
 }
-inline void arraySwitchPlaceInt(int* array, const int indexA, const int indexB) {
-	int temp = array[indexA];
-	array[indexA] = array[indexB];
-	array[indexB] = temp;
+inline void arraySwitchPlaceInt(int* biggerNum, int* smallerNum) {
+	int temp = 0;
+	temp = *smallerNum;
+	*smallerNum = *biggerNum;
+	*biggerNum = temp;
 }
 
 // SCORING
-void scoreHand(PLAYER_INFO* gameInfo) {
+int scoreHand(PLAYER_INFO* playerInfo) {
+	static int score = 0;
 	int cardChips = 0;  //Chips earned from cards rank
-	int handTypeChips = calculateChips(gameInfo, &cardChips); //Chips earned from hand type
-	int mult = calculateMult(gameInfo);
+	int handTypeChips = calculateChips(playerInfo, &cardChips); //Chips earned from hand type
+	int mult = calculateMult(playerInfo);
 	printf("\n\n");
 	printf("\tChips  X  Multiplier   Chip Bonus\n");
 	printf("          %d     ", handTypeChips);
@@ -293,7 +294,11 @@ void scoreHand(PLAYER_INFO* gameInfo) {
 	printf("\t  +%d \n", cardChips);
 	printf("\n\n");
 	printf("\t          Score: %d ", mult * handTypeChips + cardChips);
-	gameInfo->score += mult * handTypeChips + cardChips;
+	score += mult * handTypeChips + cardChips;
+	playerInfo->score = score;
+	if (playerInfo->statistics->round == 3) 
+		score = 0;
+	return playerInfo->score;
 }
 int calculateChips(const PLAYER_INFO* playerInfo, int* cardChips) {
 	long int handTypeChips = 0;
@@ -435,6 +440,13 @@ void printFinalScreen(const PLAYER_INFO* playerInfo) {
 	printf("                    |                %d     %s       |      \n", playerInfo->score, spacing);
 	printf("                     --------------------------------       \n");
 	printScoreList();
+	int previousScore = checkFinalScore(playerInfo->score);
+	if (previousScore == -1) {
+		printf("\n\n\t\tFinal score did not make it to the leaderboard\n");
+	}
+	else {
+		printf("\n\n\t\tFinal score took the %d. place on the leaderboard\n", 10 - previousScore);
+	}
 	Sleep(6500);
 }
 void saveScore(const int score) {
@@ -476,10 +488,37 @@ void printGameInstructions() {
 	printf("\n\t\t  [Press any key to continue]\n");
 	_getch();
 }
+void showHighScore() {
+	int highScore = 0;
+	FILE* fp = fopen("highScore.txt", "r");
+	if (fp == NULL) {
+		printf("No high score");
+		Sleep(5000);
+		return;
+	}
+	if (fscanf(fp, "%d", &highScore) == NULL) {
+		perror("ERROR: ");
+		exit(-1);
+	}
+	printf("\n\n\n\t\t      High score is %d", highScore);
+	printf("\n\t\t  Press any key to continue\n\n");
+	_getch();
+	fclose(fp);
+}
+void openSubMenu(int choice) {
+	void (*functionP[2])();
+	functionP[0] = showHighScore;
+	functionP[1] = printGameInstructions;
+	if (choice == 3) {
+		functionP[0]();
+		return;
+	}
+	if (choice == 2) {
+		functionP[1]();
+	}
+}
 
 //SCOREBOARD
-int scoreListP[10] = { 0 };
-int* scoreList = scoreListP;
 void addScoreToList(const int score) {
 	FILE* fp = fopen("scoreList.txt", "r");
 	if (fp == NULL) {
@@ -526,7 +565,7 @@ void sortScores() {
 	while (arraySorted == 0) {
 		for (int i = 0; i < 9; i++) {
 			if (*(scoreList + i) < *(scoreList + (i + 1))) {
-				arraySwitchPlaceInt(scoreList, i, i + 1);
+				arraySwitchPlaceInt(&scoreList[i], &scoreList[i + 1]);
 				count++;
 			}
 		}
@@ -548,24 +587,18 @@ void updateList() {
 	}
 	fclose(fp);
 }
-inline void zamjena(int* const veci, int* const manji) {
-	int temp = 0;
-	temp = *manji;
-	*manji = *veci;
-	*veci = temp;
-}
-void selectionSort(int polje[], const int n) {
+void selectionSort(int array[], const int n) {
 	int min = -1;
 	for (int i = 0; i < n - 1; i++)
 	{
 		min = i;
 		for (int j = i + 1; j < n; j++)
 		{
-			if (polje[j] < polje[min]) {
+			if (array[j] < array[min]) {
 				min = j;
 			}
 		}
-		zamjena(&polje[i], &polje[min]);
+		arraySwitchPlaceInt(&array[i], &array[min]);
 	}
 }
 void printScoreList() {
@@ -574,5 +607,14 @@ void printScoreList() {
 		printf("\n\t\t    %d.  %d ", i + 1, scoreListP[9 -  i]);
 	}
 	printf("\n\t\t   %d.  %d ", 10, scoreListP[0]);
+}
+int linearSearch(const int array[], const int n, const int num) {
+	for (int i = 0; i < n; i++)
+	{
+		if (array[i] == num) {
+			return i;
+		}
+	}
+	return -1;
 }
 

@@ -1,6 +1,2 @@
-﻿  functions.c
-  poker.c
-C:\Users\Liongamer69\Desktop\Poker\poker.c(50,5): warning C4013: '_getch' undefined; assuming extern returning int
-C:\Users\Liongamer69\Desktop\Poker\poker.c(53,37): warning C4047: '==': 'int' differs in levels of indirection from 'void *'
-  Generating Code...
+﻿  poker.c
   pker.vcxproj -> C:\Users\Liongamer69\Desktop\Poker\x64\Debug\Poker.exe
