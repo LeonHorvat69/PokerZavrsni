@@ -227,7 +227,7 @@ int getInput(char* chooseInput) {
 	else if (strcmp(chooseInput, "menuInput") == 0) {
 		text = "Input menu option: ";
 		min = 1;
-		max = 4;
+		max = 6;
 	}
 	int input = 0;
 	char keyInput[50];
@@ -470,16 +470,23 @@ void saveScore(const int score) {
 }
 
 //MENU
-int printMenu() {
+int printMenu(char* currentUser) {
 	system("cls");
+	printf("Current user: %s", currentUser);
 	printf("1. Start game\n");
 	printf("2. Tutorial\n");
 	printf("3. High score\n");
 	printf("4. Exit game\n");
+	printf("5. New user\n");
+	printf("6. Load different user\n");
 	int input = getInput("menuInput");
 	system("cls");
 	return input;
 }
+
+
+
+
 void printGameInstructions() {
 	printf("Each round you are handed 8 cards and from them choose 5 cards or less to play.\n");
 	printf("You can discard up to 3 cards in a round to create a new hand.\n");
@@ -541,6 +548,7 @@ void createList(FILE* fp, const int score) {
 		perror("Cant create scoreList.txt");
 		exit(EXIT_FAILURE);
 	}
+	rewind(fp);
 	fprintf(fp, "%d ", score);
 	*(scoreList + 0) = score;
 	for (int i = 1; i < 10; i++) 
@@ -549,7 +557,10 @@ void createList(FILE* fp, const int score) {
 }
 inline void getSavedList(FILE* fp) {
 	for (int i = 0; i < 10; i++) {
-		fscanf(fp, "%d", &scoreListP[i]);
+		if (fscanf(fp, "%d", &scoreListP[i]) == EOF) {
+			perror("Cant get saved list");
+			exit(EXIT_FAILURE);
+		}
 	}
 	fclose(fp);
 }
@@ -576,7 +587,6 @@ void sortScores() {
 }
 void updateList() {
 	FILE* fp = fopen("scoreList.txt", "w");
-	
 	if (fp == NULL) {
 		perror("Cant create scoreList");
 		exit(EXIT_FAILURE);
@@ -587,6 +597,27 @@ void updateList() {
 	}
 	fclose(fp);
 }
+
+void newUser() {
+	char name[30] = { '\0' };
+	printf("Create new username: ");
+	fgets(name, 30, stdin);
+	FILE* fp = fopen("usernames.txt", "w");
+	if (fp == NULL) {
+		perror("No data");
+		exit(EXIT_FAILURE);
+	}
+	fprintf(fp, "%s\n", name);
+
+	fclose(fp);
+
+}
+char* loadUser(char* username) {
+	char user[30] = { "\0" };
+	
+}
+
+
 void selectionSort(int array[], const int n) {
 	int min = -1;
 	for (int i = 0; i < n - 1; i++)

@@ -21,4 +21,12 @@ typedef struct {
 	STATISTICS* statistics;
 }PLAYER_INFO;
 
+typedef enum {
+	START_GAME = 1,
+	INSTRUCTIONS,
+	HIGH_SCORE,
+	EXIT,
+}MENU;
+
+
 

@@ -47,3 +47,5 @@ inline void arraySwitchPlaceInt(int* biggerNum, int* smallerNum);
 void printScoreList();
 int linearSearch(const int array[], const int n, const int num);
 
+void newUser();
+
