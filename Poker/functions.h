@@ -30,7 +30,7 @@ void printFinalScreen(const PLAYER_INFO* playerInfo);
 void saveScore(const int score);
 
 //MENU
-int printMenu();
+int printMenu(char* currentUser);
 void printGameInstructions();
 void showHighScore();
 void openSubMenu(int choice);
@@ -41,11 +41,19 @@ void createList(FILE* fp, const int score);
 inline void getSavedList(FILE* fp);
 void insertScore(const int score);
 void sortScores();
-void updateList();
 void selectionSort(int polje[], const int n);
 inline void arraySwitchPlaceInt(int* biggerNum, int* smallerNum);
 void printScoreList();
 int linearSearch(const int array[], const int n, const int num);
+void updateList();
 
-void newUser();
-
+//USERS
+void saveUsers(USERS* users);
+USERS* loadUser(USERS* users);
+int selectUser(USERS* users);
+void newUser(USERS* users);
+void sortUserScores(int users[]);
+void saveScoreForUser(USERS* users, int currentUser, int score);
+USERS* deletedUser(USERS* users);
+USERS* replaceUser(USERS* users, int deletedUser);
+void printUserScores(int currentUser);

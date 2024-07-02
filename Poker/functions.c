@@ -4,7 +4,6 @@
 #include <string.h>
 #include <time.h>
 #include <conio.h>
-#include <windows.h>
 #include "structs.h"
 #include "functions.h"
 
@@ -90,7 +89,7 @@ void shuffleDeck(CARD* deck[], CARD* allCardsInOrder[]) {
 void printGame(const PLAYER_INFO* playerInfo, const int discardUsed) {
 	if (playerInfo->statistics->round != 1 && discardUsed == 0) {
 		printf("\n\t  [Press any key to continue]\n");
-		_getch();
+		int a = _getch();
 	}
 
 	system("cls");
@@ -206,7 +205,7 @@ void playHand(PLAYER_INFO* playerInfo) {
 					break;
 			}
 		}
-
+		if (input != 0)
 		playerInfo->playedHand[numOfCardsPlayed] = playerInfo->hand[input - 1];
 		numOfCardsPlayed++;
 		playerInfo->statistics->allCardsPlayedInRound++;
@@ -227,7 +226,7 @@ int getInput(char* chooseInput) {
 	else if (strcmp(chooseInput, "menuInput") == 0) {
 		text = "Input menu option: ";
 		min = 1;
-		max = 6;
+		max = 8;
 	}
 	int input = 0;
 	char keyInput[50];
@@ -424,7 +423,7 @@ int arrayGetSingleNumber(const PLAYER_INFO* playerInfo, const int* sameRankList)
 }
 void printFinalScreen(const PLAYER_INFO* playerInfo) {
 	printf("\n\t  [Press any key to continue]\n");
-	_getch();
+	int a = _getch();
 	system("cls");
 	char spacing[] = "   ";  //Used to allign final score to screen
 
@@ -447,7 +446,8 @@ void printFinalScreen(const PLAYER_INFO* playerInfo) {
 	else {
 		printf("\n\n\t\tFinal score took the %d. place on the leaderboard\n", 10 - previousScore);
 	}
-	Sleep(6500);
+	printf("\n\t\tPRESS ANY BUTTON TO CONTINUE\n");
+	int k = _getch();
 }
 void saveScore(const int score) {
 	char temp[30] = { '\0' };
@@ -471,21 +471,21 @@ void saveScore(const int score) {
 
 //MENU
 int printMenu(char* currentUser) {
+	
 	system("cls");
-	printf("Current user: %s", currentUser);
+	printf("Current user: %s \n", currentUser);
 	printf("1. Start game\n");
 	printf("2. Tutorial\n");
 	printf("3. High score\n");
-	printf("4. Exit game\n");
-	printf("5. New user\n");
-	printf("6. Load different user\n");
+	printf("4. New user\n");
+	printf("5. Load user\n");
+	printf("6. Delete user\n");
+	printf("7. Current user high scores\n");
+	printf("8. Exit game\n");
 	int input = getInput("menuInput");
 	system("cls");
 	return input;
 }
-
-
-
 
 void printGameInstructions() {
 	printf("Each round you are handed 8 cards and from them choose 5 cards or less to play.\n");
@@ -493,23 +493,23 @@ void printGameInstructions() {
 	printf("All hand types have different values and multipliers which add up with the worth of each rank from each card.\n");
 	printf("The goal is to get as high of a score as you can.\n");
 	printf("\n\t\t  [Press any key to continue]\n");
-	_getch();
+	int a = _getch();
 }
 void showHighScore() {
 	int highScore = 0;
 	FILE* fp = fopen("highScore.txt", "r");
 	if (fp == NULL) {
-		printf("No high score");
-		Sleep(5000);
+		printf("\n\t\t  Press any key to continue\n\n");
+		int a = _getch();
 		return;
 	}
-	if (fscanf(fp, "%d", &highScore) == NULL) {
+	if (fscanf(fp, "%d", &highScore) == 0) {
 		perror("ERROR: ");
 		exit(-1);
 	}
 	printf("\n\n\n\t\t      High score is %d", highScore);
 	printf("\n\t\t  Press any key to continue\n\n");
-	_getch();
+	int a = _getch();
 	fclose(fp);
 }
 void openSubMenu(int choice) {
@@ -526,20 +526,30 @@ void openSubMenu(int choice) {
 }
 
 //SCOREBOARD
+
 void addScoreToList(const int score) {
 	FILE* fp = fopen("scoreList.txt", "r");
 	if (fp == NULL) {
 		createList(fp, score);
 		return;
 	}
-	if (fp == NULL) {
-		perror("Cant create scoreList");
-		exit(EXIT_FAILURE);
-	}
 	getSavedList(fp);
 	fp = fopen("scoreList.txt", "w");
 	insertScore(score);
 	updateList(fp);
+	fclose(fp);
+}
+void updateList() {
+	FILE* fp = fopen("scoreList.txt", "w");
+
+	if (fp == NULL) {
+		perror("Cant create scoreList");
+		exit(EXIT_FAILURE);
+	}
+	rewind(fp);
+	for (int i = 0; i < 10; i++) {
+		fprintf(fp, "%d ", *(scoreList + i));
+	}
 	fclose(fp);
 }
 void createList(FILE* fp, const int score) {
@@ -548,25 +558,27 @@ void createList(FILE* fp, const int score) {
 		perror("Cant create scoreList.txt");
 		exit(EXIT_FAILURE);
 	}
-	rewind(fp);
 	fprintf(fp, "%d ", score);
 	*(scoreList + 0) = score;
-	for (int i = 1; i < 10; i++) 
+	for (int i = 1; i < 10; i++)
 		fprintf(fp, "0 ");
 	fclose(fp);
 }
 inline void getSavedList(FILE* fp) {
 	for (int i = 0; i < 10; i++) {
-		if (fscanf(fp, "%d", &scoreListP[i]) == EOF) {
-			perror("Cant get saved list");
-			exit(EXIT_FAILURE);
+		int g = fscanf(fp, "%d", &scoreListP[i]);
+		if (g == 0) {
+			perror("ERROR");
+			exit(-1);
 		}
 	}
 	fclose(fp);
 }
 void insertScore(const int score) {
-	if (*(scoreList + 0) > score)
+	if (*(scoreList + 0) > score) {
+		
 		return;
+	}
 	*(scoreList + 0) = score;
 	selectionSort(scoreList, 10);
 }
@@ -585,38 +597,6 @@ void sortScores() {
 		count = 0;
 	}
 }
-void updateList() {
-	FILE* fp = fopen("scoreList.txt", "w");
-	if (fp == NULL) {
-		perror("Cant create scoreList");
-		exit(EXIT_FAILURE);
-	}
-	rewind(fp);
-	for (int i = 0; i < 10; i++) {
-		fprintf(fp, "%d ", *(scoreList + i));
-	}
-	fclose(fp);
-}
-
-void newUser() {
-	char name[30] = { '\0' };
-	printf("Create new username: ");
-	fgets(name, 30, stdin);
-	FILE* fp = fopen("usernames.txt", "w");
-	if (fp == NULL) {
-		perror("No data");
-		exit(EXIT_FAILURE);
-	}
-	fprintf(fp, "%s\n", name);
-
-	fclose(fp);
-
-}
-char* loadUser(char* username) {
-	char user[30] = { "\0" };
-	
-}
-
 
 void selectionSort(int array[], const int n) {
 	int min = -1;
@@ -648,4 +628,160 @@ int linearSearch(const int array[], const int n, const int num) {
 	}
 	return -1;
 }
+
+void saveUsers(USERS* users) {
+	remove("users.bin");
+	FILE* fp = fopen("users.bin", "wb");
+	if (fp == NULL) {
+		perror("CANT CREATE DATA");
+		exit(-1);
+	}
+	fwrite(users, sizeof(USERS), 10, fp);
+	fclose(fp);
+}
+USERS* loadUser(USERS* users) {
+	FILE* fp = fopen("users.bin", "rb");
+	if (fp == NULL) {
+		perror("NO DATA");
+		exit(-1);
+	}
+	
+	size_t g = fread(users, sizeof(USERS), 10, fp);
+	fclose(fp);
+	return users;
+}
+int selectUser(USERS* users) {
+	printf("Select username: \n");
+	char name[30];
+	strcpy(name,users[0].name);
+	int i = 1;
+	for (i; strcmp(name, "Empty user") != 0; i++) {
+		printf("%d. %s\n", i, name);
+		strcpy(name, users[i].name);
+	}
+	int selectUser = -1;
+	while (selectUser < 1 || selectUser >= i) {
+		int g = scanf("%d", &selectUser);
+	}
+	
+	return selectUser - 1;
+
+}
+
+
+void newUser(USERS* users) {
+	char name[30] = { '\0' };
+	int index = 0;
+	for (int i = 0; strcmp(users[i].name, "Empty user") != 0; i++) {
+		index++;
+	}
+	printf("Enter username: ");
+	int g = scanf("%s", name);
+	if (g == 0) {
+		perror("ERROR");
+		exit(-1);
+	}
+	strcpy(users[index].name, name);
+	saveUsers(users);
+}
+
+void saveScoreForUser(USERS* users,  int currentUser, int score) {
+	if (score < users[currentUser].scores[0]) {
+		return;
+	}
+	users[currentUser].scores[0] = score;
+	sortUserScores(users[currentUser].scores);
+	saveUsers(users);
+
+}
+
+void sortUserScores(int users[]) {
+	int min = -1;
+	for (int i = 0; i < 10 - 1; i++)
+	{
+		min = i;
+		for (int j = i + 1; j < 10; j++)
+		{
+			if (users[j] < users[min]) {
+				min = j;
+			}
+		}
+		arraySwitchPlaceInt(&users[i], &users[min]);
+	}
+}
+
+USERS* deletedUser(USERS* users) {
+	int deletedUser = 0;
+	FILE* fp = fopen("users.bin", "rb");
+	if (fp == NULL) {
+		perror("NO DATA");
+		exit(-1);
+	}
+	size_t a = fread(users, sizeof(USERS), 10, fp);
+	int b = fclose(fp);
+	if (a == 0 || b == 0) {
+		perror("ERROR");
+	}
+	deletedUser = selectUser(users);
+	strcpy(users[deletedUser].name, "Empty user");
+	for (int i = 0; i < 10; i++)
+		users[deletedUser].scores[i] = 0;
+	
+	users = replaceUser(users, deletedUser);
+	return users;
+	
+
+
+
+}
+
+USERS* replaceUser(USERS* users, int deletedUser) {
+	int j = 0;
+	for (int i = deletedUser; i < 9; i++) {
+		users[deletedUser + j] = users[deletedUser + 1 + j];
+		j++;
+	}
+
+
+	strcpy(users[9].name, "Empty user");
+	for (int i = 0; i < 10; i++)
+		users[9].scores[i] = 0;
+
+	remove("users.bin");
+	FILE* fp = fopen("users.bin", "wb");
+	if (fp == NULL) {
+		perror("NO DATA");
+		exit(-1);
+	}
+	size_t a = fread(users, sizeof(USERS), 10, fp);
+	int b = fclose(fp);
+	if (a == 0 || b == 0) {
+		perror("ERROR");
+	}
+	return users;
+	
+}
+
+void printUserScores(int currentUser) {
+	FILE* fp = fopen("users.bin", "rb");
+	
+	USERS users[10];
+	if (fp == NULL ) {
+		perror("NO DATA");
+		exit(-1);
+	}
+	size_t a = fread(users, sizeof(USERS), 10, fp);
+	int b = fclose(fp);
+	if (a == 0 || b == 0) {
+		perror("ERROR");
+	}
+	printf("\t\t High scores\n");
+
+	for (int i = 0; i < 10; i++) {
+		printf("\t  %d. %d\n", i + 1, users[currentUser].scores[9 - i]);
+	}
+	printf("\n\t  [Press any key to continue]\n");
+	int c = _getch();
+}
+
 
